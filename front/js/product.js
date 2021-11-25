@@ -1,16 +1,12 @@
 
 // Recuperation de la chaine de requête dans l'URL
 const urlWithId = window.location.search;
-console.log(urlWithId);
 // Extraire l'ID
 const urlSearchparams = new URLSearchParams(urlWithId);
-console.log(urlSearchparams);
-
 const id = urlSearchparams.get("id");
-console.log(id);
 
 
-
+// Ajout de l'article selon un ID 
 fetch("http://localhost:3000/api/products/"+id)
   .then(function(res) {
     if (res.ok) {
@@ -24,7 +20,7 @@ fetch("http://localhost:3000/api/products/"+id)
         <section class="item">
           <article>
             <div class="item__img">
-              <img src="${value.imageUrl}" alt="${value.altTxt}">
+              <img class="img" src="${value.imageUrl}" alt="${value.altTxt}">
             </div>
             <div class="item__content">
 
@@ -48,7 +44,7 @@ fetch("http://localhost:3000/api/products/"+id)
 
                 <div class="item__content__settings__quantity">
                   <label for="itemQuantity">Nombre d'article(s) (1-100) :</label>
-                  <input type="number" name="itemQuantity" min="1" max="100" value="0" id="quantity">
+                  <input type="number" name="itemQuantity" min="1" max="100" value="1" id="quantity">
                 </div>
               </div>
 
@@ -60,34 +56,71 @@ fetch("http://localhost:3000/api/products/"+id)
           </article>
         </section>
       </div>`
-    const pageProduit = document.getElementById('limitedWidthBlock');
-    pageProduit.innerHTML = produit;
+      
+const pageProduit = document.getElementById('limitedWidthBlock');
+pageProduit.innerHTML = produit;
 
-    let colors = document.getElementById("colors");
-    for (let i = 0; i < value.colors.length; i+=1) {
-        let colorOption = document.createElement('option');
-        colorOption.innerText = value.colors[i];
-        colorOption.value = value.colors[i];
-        colors.appendChild(colorOption);
+// Proposition de couleurs selon l'article 
+let colors = document.getElementById("colors");
+for (let i = 0; i < value.colors.length; i+=1) {
+    let colorOption = document.createElement('option');
+    colorOption.innerText = value.colors[i];
+    colorOption.value = value.colors[i];
+    colors.appendChild(colorOption);
       }
 
-  })
+
+ // Ajout dans panier
+        const addToCart = document.querySelector("#addToCart");
+        addToCart.addEventListener("click", () =>
+      {
+            if (!document.getElementById("colors").value) {
+                addToCart.style.display= "none";
+            return
+          } else {
+            addToCart.style.display= "block"
+            // alert("c'est ajouté !")
+          }
+
+            let addProduct = {
+                color: document.getElementById("colors").value,
+                _id: id,
+                qty: 1,
+                name: document.getElementById("title").value,
+                price: document.getElementById("price").value,
+                imageUrl: document.querySelector(".img").value
+          }
+        
+            // Local storage
+            // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
+            let basketItems = [];
+            if (localStorage.getItem('products') !== null) {
+                basketItems = JSON.parse(localStorage.getItem('products'));
+            }
+
+
+            let found = false;
+            for ( j = 0 ; j < basketItems.length ; j++ ) {
+                if (basketItems[j]._id == id && basketItems[j].color == document.getElementById("colors").value) {
+                    basketItems[j].qty++
+                    found = true
+                    }
+                }
+                if(!found) {
+                    // Si local storage vide, on va créer le produit
+                    basketItems.push(addProduct);
+                }
+            localStorage.setItem('products', JSON.stringify(basketItems));
+
+        //   }
+    }   
+
+
+  )}) 
+
   .catch(function(err) {
     const pageProduit = document.getElementsByClassName('limitedWidthBlock');
-    pageProduit.innerHTML = `Une erreur est survenue (${err})`;
-  });
+     pageProduit.innerHTML = `Une erreur est survenue (${err})`;
+   });
 
-//   Ajout dans panier
-  let addToCart = document.getElementById('addToCart');
-  document.getElementById('addToCart').addEventListener("click", alert(1))
-  addToCart.addEventListener('click', function() {
-      console.log(addToCart);
-          let addProduct = {
-            color: document.getElementById("colors").value,
-            _id: id
-          }
-          localStorage.setItem('basketItems', [addProduct])
-      }
-  )
 
-// Local storage
