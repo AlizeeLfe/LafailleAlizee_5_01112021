@@ -1,10 +1,12 @@
-
 // Recuperation de la chaine de requête dans l'URL
 const urlWithId = window.location.search;
 // Extraire l'ID
 const urlSearchparams = new URLSearchParams(urlWithId);
 const id = urlSearchparams.get("id");
 
+let title = ''
+let imgSrc = ''
+let price = ''
 
 // Ajout de l'article selon un ID 
 fetch("http://localhost:3000/api/products/"+id)
@@ -14,6 +16,9 @@ fetch("http://localhost:3000/api/products/"+id)
     }
   })
   .then(function(value) {
+      imgSrc = value.imageUrl;
+      title = value.name
+      price = value.price
     let produit = "";
       produit += `
       <div class="limitedWidthBlock">
@@ -38,7 +43,7 @@ fetch("http://localhost:3000/api/products/"+id)
                 <div class="item__content__settings__color">
                   <label for="color-select">Choisir une couleur :</label>
                   <select name="color-select" id="colors">
-                  <option value="">--SVP, choisissez une couleur --</option> 
+                  <option class="button_visibility" value="">--SVP, choisissez une couleur --</option> 
                   </select>
                 </div>
 
@@ -57,48 +62,57 @@ fetch("http://localhost:3000/api/products/"+id)
         </section>
       </div>`
       
-const pageProduit = document.getElementById('limitedWidthBlock');
-pageProduit.innerHTML = produit;
+    const pageProduit = document.getElementById('limitedWidthBlock');
+    pageProduit.innerHTML = produit;
 
-// Proposition de couleurs selon l'article 
-let colors = document.getElementById("colors");
-for (let i = 0; i < value.colors.length; i+=1) {
-    let colorOption = document.createElement('option');
-    colorOption.innerText = value.colors[i];
-    colorOption.value = value.colors[i];
-    colors.appendChild(colorOption);
-      }
+    // Proposition de couleurs selon l'article 
+    let colors = document.getElementById("colors");
+    for (let i = 0; i < value.colors.length; i+=1) {
+        let colorOption = document.createElement('option');
+        colorOption.innerText = value.colors[i];
+        colorOption.value = value.colors[i];
+        colors.appendChild(colorOption);
+        }
 
 
- // Ajout dans panier
-        const addToCart = document.querySelector("#addToCart");
-        addToCart.addEventListener("click", () =>
-      {
+    // Ajout dans panier
+    const addToCart = document.querySelector("#addToCart");
+    addToCart.addEventListener("click", () => {
+
+        let redContour = document.getElementById("colors");
             if (!document.getElementById("colors").value) {
-                addToCart.style.display= "none";
-            return
-          } else {
-            addToCart.style.display= "block"
+                redContour.classList.add("red_alert");
+                // addToCart.style.display= "none";
+                return
+          }else {
+            redContour.classList.remove("red_alert");
+            // addToCart.style.display= "block"
             // alert("c'est ajouté !")
           }
 
-            let addProduct = {
-                color: document.getElementById("colors").value,
-                _id: id,
-                qty: 1,
-                name: document.getElementById("title").value,
-                price: document.getElementById("price").value,
-                imageUrl: document.querySelector(".img").value
+      
+
+        let addProduct = {
+            color: document.getElementById("colors").value,
+            _id: id,
+            qty: 1,
+            name: title,
+            price: price,
+            imageUrl: imgSrc
+                // name: document.getElementById('title').innerText,
+                // price: document.getElementById("price").innerText,
+                // imageUrl: document.getElementsByClassName("img")[0].src
+                // OU APPEL API A VOIR
           }
-        
+
             // Local storage
             // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
             let basketItems = [];
-            if (localStorage.getItem('products') !== null) {
-                basketItems = JSON.parse(localStorage.getItem('products'));
-            }
+                if (localStorage.getItem('products') !== null) {
+                    basketItems = JSON.parse(localStorage.getItem('products'));
+                }
 
-
+            // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
             let found = false;
             for ( j = 0 ; j < basketItems.length ; j++ ) {
                 if (basketItems[j]._id == id && basketItems[j].color == document.getElementById("colors").value) {
@@ -107,18 +121,15 @@ for (let i = 0; i < value.colors.length; i+=1) {
                     }
                 }
                 if(!found) {
-                    // Si local storage vide, on va créer le produit
+                    // Sinon, on va créer le produit dans le local storage
                     basketItems.push(addProduct);
                 }
             localStorage.setItem('products', JSON.stringify(basketItems));
+        }   
+    )
+}) 
 
-        //   }
-    }   
-
-
-  )}) 
-
-  .catch(function(err) {
+.catch(function(err) {
     const pageProduit = document.getElementsByClassName('limitedWidthBlock');
      pageProduit.innerHTML = `Une erreur est survenue (${err})`;
    });
