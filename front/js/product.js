@@ -4,9 +4,8 @@ const urlWithId = window.location.search;
 const urlSearchparams = new URLSearchParams(urlWithId);
 const id = urlSearchparams.get("id");
 
-let title = "";
-let imgSrc = "";
-let price = "";
+const inputQuantity = document.getElementById("quantity");
+
 
 // Ajout de l'article selon un ID
 fetch("http://localhost:3000/api/products/" + id)
@@ -16,9 +15,6 @@ fetch("http://localhost:3000/api/products/" + id)
     }
   })
   .then(function (value) {
-    imgSrc = value.imageUrl;
-    title = value.name;
-    price = value.price;
     let produit = "";
     produit += `
       <div class="limitedWidthBlock">
@@ -80,50 +76,40 @@ fetch("http://localhost:3000/api/products/" + id)
       let redContour = document.getElementById("colors");
       if (!document.getElementById("colors").value) {
         redContour.classList.add("red_alert");
-        // addToCart.style.display= "none";
         return;
       } else {
         redContour.classList.remove("red_alert");
-        // addToCart.style.display= "block"
-        // alert("c'est ajouté !")
       }
 
-      let addProduct = {
-        color: document.getElementById("colors").value,
-        _id: id,
-        qty: 1,
-        name: title,
-        price: price,
-        imageUrl: imgSrc,
-        // name: document.getElementById('title').innerText,
-        // price: document.getElementById("price").innerText,
-        // imageUrl: document.getElementsByClassName("img")[0].src
-        // OU APPEL API A VOIR
-      };
+      value["color"] = document.getElementById("colors").value;
+      value["qty"] = Number(inputQuantity.value);
+
+      
 
       // Local storage
       // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
-      let basketItems = [];
-      if (localStorage.getItem("products") !== null) {
-        basketItems = JSON.parse(localStorage.getItem("products"));
+      let cart = [];
+      if (localStorage.getItem("cart") !== null) {
+        cart = JSON.parse(localStorage.getItem("cart"));
       }
 
       // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
       let found = false;
-      for (j = 0; j < basketItems.length; j++) {
+      cart.forEach((product,index) => {
         if (
-          basketItems[j]._id == id &&
-          basketItems[j].color == document.getElementById("colors").value
+          cart[index]._id == id &&
+          cart[index].color == document.getElementById("colors").value
         ) {
-          basketItems[j].qty++;
+          cart[index].qty+=Number(inputQuantity.value)
           found = true;
-        }
-      }
+        } 
+      });
+
       if (!found) {
         // Sinon, on va créer le produit dans le local storage
-        basketItems.push(addProduct);
+        cart.push(value);
       }
-      localStorage.setItem("products", JSON.stringify(basketItems));
+      localStorage.setItem("cart", JSON.stringify(cart));
     });
   })
 
