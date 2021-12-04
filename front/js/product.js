@@ -4,7 +4,6 @@ const urlWithId = window.location.search;
 const urlSearchparams = new URLSearchParams(urlWithId);
 const id = urlSearchparams.get("id");
 
-const inputQuantity = document.getElementById("quantity");
 
 
 // Ajout de l'article selon un ID
@@ -80,19 +79,17 @@ fetch("http://localhost:3000/api/products/" + id)
       } else {
         redContour.classList.remove("red_alert");
       }
-
       value["color"] = document.getElementById("colors").value;
-      value["qty"] = Number(inputQuantity.value);
+      value["qty"] = Number(document.getElementById("quantity").value);
 
       
 
-      // Local storage
+      //********************LOCAL STORAGE************************
       // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
       let cart = [];
       if (localStorage.getItem("cart") !== null) {
         cart = JSON.parse(localStorage.getItem("cart"));
       }
-
       // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
       let found = false;
       cart.forEach((product,index) => {
@@ -100,7 +97,7 @@ fetch("http://localhost:3000/api/products/" + id)
           cart[index]._id == id &&
           cart[index].color == document.getElementById("colors").value
         ) {
-          cart[index].qty+=Number(inputQuantity.value)
+          cart[index].qty+=Number(inputQuantity.value);
           found = true;
         } 
       });
