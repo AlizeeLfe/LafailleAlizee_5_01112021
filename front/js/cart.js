@@ -1,10 +1,10 @@
-//-------------------AFFICHAGE DES PROUITS DANS LE PANIER---------------------
+//****************************AFFICHAGE DES PROUITS DANS LE PANIER******************
 const cartContainer = document.getElementById("cart__items");
 const cartPrice = document.querySelector(".cart__price");
 const cartOrder = document.querySelector(".cart__order");
 
 // Recuperation des données contenues dans le LS et conversion en format JSON
-let cart = JSON.parse(localStorage.getItem("cart")) 
+let cart = JSON.parse(localStorage.getItem("cart"));
 // Si le panier est vide, afficher un message, cacher le reste de la page
 if (cart === null) {
   const emptyCart = `
@@ -19,9 +19,8 @@ if (cart === null) {
 } else {
   let html = "";
   //Si le panier n'est pas vide, il faut afficher les produits qui sont dans le local storage
-  cart.forEach((product) => {
-    html +=
-      `     <article class="cart__item" data-id="{product-ID}">
+  cart.forEach((product,index) => {
+    html += `     <article class="cart__item" data-id="${product._id}">
                     <div class="cart__item__img">
                     <img src="${product.imageUrl}" alt="${product.altTxt}">
                     </div>
@@ -29,15 +28,19 @@ if (cart === null) {
                     <div class="cart__item__content__titlePrice">
                         <h2>${product.name}</h2>
                         <p> Couleur : ${product.color}</p>
-                        <p class:"item_price">Prix : ${product.price*product.qty} € </p>
+                        <p class:"item_price">Prix : ${
+                          product.price * product.qty
+                        } € </p>
                     </div>
                     <div class="cart__item__content__settings">
                         <div class="cart__item__content__settings__quantity">
                         <p>Qté : </p>
-                        <input type="number" class="item__quantity" name="itemQuantity" min="1" max="100" value="${product.qty}">
+                        <input type="number" class="item__quantity" name="itemQuantity" min="1" max="100" value="${
+                          product.qty
+                        }">
                         </div>
                         <div class="cart__item__content__settings__delete">
-                        <p class="deleteItem">Supprimer</p>
+                        <p class="deleteItem" data-index=${index}>Supprimer</p>
                         </div>
                     </div>
                     </div>
@@ -47,35 +50,25 @@ if (cart === null) {
   cartContainer.innerHTML = html;
 }
 
-
-
-
-// Gestion du bouton supprimer l'article
-// NE SUPPRIME PAS LS //
-let deleteArticle = document.getElementsByClassName(
-  "cart__item__content__settings__delete"
-);
-// Selection de l'article qui va être supprimé en cliquant sur "supprimer"
-for (let k = 0; k < deleteArticle.length; k++) {
-  let supButton = deleteArticle[k];
-  supButton.addEventListener("click", function (event) {
-    event.preventDefault();
-    let buttonClicked = event.target;
-    buttonClicked.parentElement.parentElement.parentElement.parentElement.remove();
-    updateCartTotal();
-    //Alerte et refresh de la page
-    // alert("Ce produit a bien été supprimé du panier");
-    // location.reload();
-  });
+//*************************Gestion du bouton supprimer l'article****************************
+let deleteBtn = document.querySelectorAll(".deleteItem");
+deleteBtn.forEach((btn) => {
+    removeOnCart(btn.dataset.index)
+});
+function removeOnCart(index) {
+  cart.splice(index, 1);
+  localStorage.setItem('cart', JSON.stringify(cart))
+  window.location.reload
 }
+
 
 //*******************Gestions Mise à jour quantité totale et prix total*******************
 // Récupération de la quantitée totales
 let totalItemQty = 0;
-cart.forEach(e =>{
-    totalItemQty+= e.qty;
+cart.forEach((e) => {
+  totalItemQty += e.qty;
 });
-let totalQty = document.getElementById('totalQuantity');
+let totalQty = document.getElementById("totalQuantity");
 totalQty.innerHTML = totalItemQty;
 
 // Récupération du prix total
@@ -85,36 +78,14 @@ let totalItemPrice = 0;
 // });
 // let totalPrice = document.getElementById('totalPrice');
 // totalPrice.innerHTML = totalItemPrice;
-cart.forEach(e=>{
-    totalItemPrice += ((e.qty*e.price));
+cart.forEach((e) => {
+  totalItemPrice += e.qty * e.price;
 });
-let productTotalPrice = document.getElementById('totalPrice');
+let productTotalPrice = document.getElementById("totalPrice");
 productTotalPrice.innerHTML = totalItemPrice;
 
-
-
-
-// NON FONCTIONNEL //
-// function updateCartTotal() {
-//   let cartItemContainer = document.getElementsByClassName("cart-all-items")[0];
-//   let cartRows = cartItemContainer.getElementsByClassName("cart__item");
-//   const total = 0;
-//   for (let m = 0; m < cartRows.length; m++) {
-//     let cartRow = cartRows[m];
-//     let priceElement = cartRow.getElementsByClassName("item_price")[0];
-//     let quantityElement = cartRow.getElementsByClassName("item__quantity")[0];
-//     let price = parseFloat(priceElement.innerText.replace("€", ""));
-//     let quantity = quantityElement.value;
-//     total = total + price * quantity;
-//   }
-
-//   document.getElementById("totalPrice").innerText = total;
-// }
-
-
-
-//------------------------------FORMULAIRE---------------------------------------------------
-//****************Verifications des données***************//
+//***********************************FORMULAIRE****************************
+//Verifications des données
 let form = document.querySelector(".cart__order__form");
 // Ecouter la modification du prenom
 form.firstName.addEventListener("change", function () {
@@ -248,7 +219,7 @@ const validEmail = function (inputEmail) {
   }
 };
 
-//***************Recuperer les données quand on clique sur le bouton commander**********//
+// Recuperer les données quand on clique sur le bouton commander
 const btnSendForm = document.querySelector("#order");
 btnSendForm.addEventListener("click", (e) => {
   e.preventDefault();
@@ -279,9 +250,18 @@ btnSendForm.addEventListener("click", (e) => {
     formValues,
   };
   // Evoi de l'objet "toSend" vers le serveur
-  const promiseCart = fetch("http://localhost:3000/api/products/order", {
+  const promiseCart = {
     method: "POST",
     body: JSON.stringify(toSend),
-  });
-});
+    headers: { "Content-Type": "application/json" },
+  };
 
+  fetch("http://localhost:3000/api/products/order", promiseCart)
+    .then((response) => response.json())
+    .then((data) => {
+      localStorage.setItem("orderId", data.orderId);
+      if (formValues()) {
+        document.location.href = "confirmation.html?id=" + data.orderId;
+      }
+    });
+});
