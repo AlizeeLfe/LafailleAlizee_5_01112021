@@ -1,25 +1,24 @@
 //****************************AFFICHAGE DES PROUITS DANS LE PANIER******************
-const cartContainer = document.getElementById("cart__items");
+const cartContainer = document.querySelector(".cart-all-items");
 const cartPrice = document.querySelector(".cart__price");
 const cartOrder = document.querySelector(".cart__order");
+const errorMsg = document.querySelector("#cart__items");
 
 // Recuperation des données contenues dans le LS et conversion en format JSON
 let cart = JSON.parse(localStorage.getItem("cart"));
 // Si le panier est vide, afficher un message, cacher le reste de la page
-if (cart === null) {
-  const emptyCart = `
-    <div class="container-panier-vide">
-    <div> Votre panier est vide </div>
-    </div>
-    `;
-  cartContainer.innerHTML = emptyCart;
-  cartContainer.style.textAlign = "center";
+if (cart === null || cart == 0) {
+  errorMsg.innerHTML = `
+    <div class="cart__empty">
+      <p>Votre panier est vide ! </p>
+    </div>`;
+  errorMsg.style.textAlign = "center";
   cartPrice.style.display = "none";
   cartOrder.style.display = "none";
 } else {
   let html = "";
   //Si le panier n'est pas vide, il faut afficher les produits qui sont dans le local storage
-  cart.forEach((product,index) => {
+  cart.forEach((product, index) => {
     html += `     <article class="cart__item" data-id="${product._id}">
                     <div class="cart__item__img">
                     <img src="${product.imageUrl}" alt="${product.altTxt}">
@@ -48,41 +47,38 @@ if (cart === null) {
             `;
   });
   cartContainer.innerHTML = html;
+
+  //*************************Gestion du bouton supprimer l'article****************************
+  let deleteBtn = document.querySelectorAll(".deleteItem");
+  deleteBtn.forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      removeOnCart(btn.dataset.index);
+    });
+    function removeOnCart(index) {
+      cart.splice(index, 1);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      window.location.href = "cart.html";
+    }
+  });
+
+  //*******************Gestions Mise à jour quantité totale et prix total*******************
+  // Récupération de la quantitée totales
+  let totalItemQty = 0;
+  cart.forEach((e) => {
+    totalItemQty += e.qty;
+  });
+  let totalQty = document.getElementById("totalQuantity");
+  totalQty.innerHTML = totalItemQty;
+
+  // Récupération du prix total
+  let totalItemPrice = 0;
+  cart.forEach((e) => {
+    totalItemPrice += e.qty * e.price;
+  });
+  let productTotalPrice = document.getElementById("totalPrice");
+  productTotalPrice.innerHTML = totalItemPrice;
 }
-
-//*************************Gestion du bouton supprimer l'article****************************
-let deleteBtn = document.querySelectorAll(".deleteItem");
-deleteBtn.forEach((btn) => {
-    removeOnCart(btn.dataset.index)
-});
-function removeOnCart(index) {
-  cart.splice(index, 1);
-  localStorage.setItem('cart', JSON.stringify(cart))
-  window.location.reload
-}
-
-
-//*******************Gestions Mise à jour quantité totale et prix total*******************
-// Récupération de la quantitée totales
-let totalItemQty = 0;
-cart.forEach((e) => {
-  totalItemQty += e.qty;
-});
-let totalQty = document.getElementById("totalQuantity");
-totalQty.innerHTML = totalItemQty;
-
-// Récupération du prix total
-let totalItemPrice = 0;
-// cart.forEach(e =>{
-//     totalItemPrice+= e.price;
-// });
-// let totalPrice = document.getElementById('totalPrice');
-// totalPrice.innerHTML = totalItemPrice;
-cart.forEach((e) => {
-  totalItemPrice += e.qty * e.price;
-});
-let productTotalPrice = document.getElementById("totalPrice");
-productTotalPrice.innerHTML = totalItemPrice;
 
 //***********************************FORMULAIRE****************************
 //Verifications des données
@@ -225,11 +221,11 @@ btnSendForm.addEventListener("click", (e) => {
   e.preventDefault();
   // Récuperation des valeurs du formulaire
   const formValues = {
-    prenom: document.querySelector("#firstName").value,
-    nom: document.querySelector("#lastName").value,
-    adresse: document.querySelector("#address").value,
-    ville: document.querySelector("#city").value,
-    mail: document.querySelector("#email").value,
+    firstName: document.querySelector("#firstName").value,
+    lastName: document.querySelector("#lastName").value,
+    address: document.querySelector("#address").value,
+    city: document.querySelector("#city").value,
+    email: document.querySelector("#email").value,
   };
   // Mettre l'objet "formValues" dans le LS si les values sont présentes dans les champs
   if (
@@ -246,7 +242,7 @@ btnSendForm.addEventListener("click", (e) => {
   }
   // Mettre les values du formulaire et mettre les produits sélectionnés dans un objet à envoyer vers le serveur
   const toSend = {
-    localStorageProducts,
+    cart,
     formValues,
   };
   // Evoi de l'objet "toSend" vers le serveur
