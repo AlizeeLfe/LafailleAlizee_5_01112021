@@ -81,7 +81,7 @@ if (cart === null || cart == 0) {
 }
 
 //***********************************FORMULAIRE****************************
-  // Envoi des données au serveur quand on clique sur le bouton commander
+// Envoi des données au serveur quand on clique sur le bouton commander
 const sendForm = function () {
   const btnSendForm = document.querySelector("#order");
   btnSendForm.addEventListener("click", (e) => {
@@ -227,12 +227,13 @@ const sendForm = function () {
         return false;
       }
     };
+
+    //*******************************************Recuperation données formulaire****************************************
     //Construction d'un array depuis le local storage
     let idProducts = [];
-    for (let i = 0; i<cart.length;i++) {
-        idProducts.push(cart[i]._id);
+    for (let i = 0; i < cart.length; i++) {
+      idProducts.push(cart[i]._id);
     }
-    //*******************************************Recuperation données formulaire****************************************
     // Mettre l'objet "contact" dans le LS si les values sont présentes dans les champs
     function validForm() {
       if (
