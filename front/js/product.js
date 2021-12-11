@@ -97,7 +97,7 @@ fetch("http://localhost:3000/api/products/" + id)
           cart[index]._id == id &&
           cart[index].color == document.getElementById("colors").value
         ) {
-          cart[index].qty+=Number(inputQuantity.value);
+          cart[index].qty+=Number(value["qty"]);
           found = true;
         } 
       });
