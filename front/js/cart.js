@@ -7,7 +7,7 @@ const errorMsg = document.querySelector("#cart__items");
 // Recuperation des données contenues dans le LS et conversion en format JSON
 let cart = JSON.parse(localStorage.getItem("cart"));
 // Si le panier est vide, afficher un message, cacher le reste de la page
-if (cart === null || cart == 0) {
+if (cart === null) {
   errorMsg.innerHTML = `
     <div class="cart__empty">
       <p>Votre panier est vide ! </p>
@@ -16,68 +16,57 @@ if (cart === null || cart == 0) {
   cartPrice.style.display = "none";
   cartOrder.style.display = "none";
 } else {
-  let html = "";
-  //Si le panier n'est pas vide, il faut afficher les produits qui sont dans le local storage
-  cart.forEach((product, index) => {
-    html += `     <article class="cart__item" data-id="${product._id}">
-                    <div class="cart__item__img">
-                    <img src="${product.imageUrl}" alt="${product.altTxt}">
-                    </div>
-                    <div class="cart__item__content">
-                    <div class="cart__item__content__titlePrice">
-                        <h2>${product.name}</h2>
-                        <p> Couleur : ${product.color}</p>
-                        <p class:"item_price">Prix : ${
-                          product.price * product.qty
-                        } € </p>
-                    </div>
-                    <div class="cart__item__content__settings">
-                        <div class="cart__item__content__settings__quantity">
-                        <p>Qté : </p>
-                        <input type="number" class="item__quantity" name="itemQuantity" min="1" max="100" value="${
-                          product.qty
-                        }">
-                        </div>
-                        <div class="cart__item__content__settings__delete">
-                        <p class="deleteItem" data-index=${index}>Supprimer</p>
-                        </div>
-                    </div>
-                    </div>
-                </article>
-            `;
-  });
-  cartContainer.innerHTML = html;
+  renderHTML();
 
   //*************************Gestion du bouton supprimer l'article****************************
   let deleteBtn = document.querySelectorAll(".deleteItem");
   deleteBtn.forEach((btn) => {
     btn.addEventListener("click", function (e) {
-      e.preventDefault();
       removeOnCart(btn.dataset.index);
     });
-    function removeOnCart(index) {
-      cart.splice(index, 1);
+  });
+  function removeOnCart(index) {
+    cart.splice(index, 1);
+    if (cart.length == 0) {
+      localStorage.removeItem("cart");
+    } else {
       localStorage.setItem("cart", JSON.stringify(cart));
-      window.location.href = "cart.html";
     }
+    window.location.reload();
+  }
+  //*************************Gestion du bouton changement quantité panier****************************
+  let updateQuantityInput = document.querySelectorAll(".item__quantity");
+  updateQuantityInput.forEach((input) => {
+    input.addEventListener("change", function (e) {
+      updateQuantityOnCart(e.target.dataset.index, e.target.value);
+    });
   });
-
+  function updateQuantityOnCart(index, value) {
+    if (value > 0) {
+      cart[index].qty = Number(value);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateTotal();
+    }
+  }
   //*******************Gestions Mise à jour quantité totale et prix total*******************
-  // Récupération de la quantitée totales
-  let totalItemQty = 0;
-  cart.forEach((e) => {
-    totalItemQty += e.qty;
-  });
-  let totalQty = document.getElementById("totalQuantity");
-  totalQty.innerHTML = totalItemQty;
+  function updateTotal() {
+    // Récupération de la quantitée totales
+    let totalItemQty = 0;
+    cart.forEach((e) => {
+      totalItemQty += e.qty;
+    });
+    let totalQty = document.getElementById("totalQuantity");
+    totalQty.innerHTML = totalItemQty;
 
-  // Récupération du prix total
-  let totalItemPrice = 0;
-  cart.forEach((e) => {
-    totalItemPrice += e.qty * e.price;
-  });
-  let productTotalPrice = document.getElementById("totalPrice");
-  productTotalPrice.innerHTML = totalItemPrice;
+    // Récupération du prix total
+    let totalItemPrice = 0;
+    cart.forEach((e) => {
+      totalItemPrice += e.qty * e.price;
+    });
+    let productTotalPrice = document.getElementById("totalPrice");
+    productTotalPrice.innerHTML = totalItemPrice;
+  }
+  updateTotal();
 }
 
 //***********************************FORMULAIRE****************************
@@ -96,137 +85,63 @@ const sendForm = function () {
     };
     //Verifications des données
     let form = document.querySelector(".cart__order__form");
-    // Ecouter la modification du prenom
-    form.firstName.addEventListener("change", function () {
-      validFisrtName(this);
-    });
-    // Ecouter la modification du nom
-    form.lastName.addEventListener("change", function () {
-      validLastName(this);
-    });
-    // Ecouter la modification de l'adresse
-    form.address.addEventListener("change", function () {
-      validAddress(this);
-    });
-    // Ecouter la modification de la ville
-    form.city.addEventListener("change", function () {
-      validCity(this);
-    });
-    // Ecouter la modification de l'email
-    form.email.addEventListener("change", function () {
-      validEmail(this);
-    });
 
-    // Contrôle validité du Prenom //
-    const validFisrtName = function (inputFisrtName) {
-      // Creation regexp pour la validation du prenom
-      let fisrtNameRegexp = new RegExp("^[a-zA-Z-]{2,20}$", "g");
-      // Test de l'expression régulière
-      let testFirstName = fisrtNameRegexp.test(inputFisrtName.value);
-      // Recuperation de la balise <p>
-      let validMessageFirstName = inputFisrtName.nextElementSibling;
-      // Message erreur ou ok
-      if (testFirstName) {
-        validMessageFirstName.innerHTML = "Prenom valide";
-        validMessageFirstName.classList.remove("text-danger");
-        validMessageFirstName.classList.add("text-success");
+    // Controle du Prenom
+    function validFirstName() {
+      const controlFirstName = contact.firstName;
+      if (/^[a-zA-Z-]{2,20}$/.test(controlFirstName)) {
         return true;
       } else {
-        validMessageFirstName.innerHTML = "Prenom non valide";
-        validMessageFirstName.classList.remove("text-success");
-        validMessageFirstName.classList.add("text-danger");
-        return false;
+        let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+        firstNameErrorMsg.innerText =
+          "Le prénom ne doit pas contenir de chiffre ou de caractère spécial";
       }
-    };
-    // Contrôle validité du Nom //
-    const validLastName = function (inputLastName) {
-      // Creation regexp pour la validation du nom
-      let lastNameRegexp = new RegExp("^[a-zA-Z-']{2,20}$", "g");
-      // Test de l'expression régulière
-      let testLastName = lastNameRegexp.test(inputLastName.value);
-      // Recuperation de la balise <p>
-      let validMessageLastName = inputLastName.nextElementSibling;
-      // Message erreur ou ok
-      if (testLastName) {
-        validMessageLastName.innerHTML = "Nom valide";
-        validMessageLastName.classList.remove("text-danger");
-        validMessageLastName.classList.add("text-success");
+    }
+
+    // Controle du nom
+    function validLastName() {
+      const controlName = contact.lastName;
+      if (/^[a-zA-Z-]{2,20}$/.test(controlName)) {
         return true;
       } else {
-        validMessageLastName.innerHTML = "Nom invalide";
-        validMessageLastName.classList.remove("text-success");
-        validMessageLastName.classList.add("text-danger");
-        return false;
+        let lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+        lastNameErrorMsg.innerText =
+          "Le nom ne doit pas contenir de chiffre ou de caractère spécial";
       }
-    };
-    // Contrôle validité de l'adresse //
-    const validAddress = function (inputAddress) {
-      // Creation regexp pour la validation du nom
-      let addressRegexp = new RegExp(
-        "^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"
-      );
-      // Test de l'expression régulière
-      let testAddress = addressRegexp.test(inputAddress.value);
-      // Recuperation de la balise <p>
-      let validMessageAddress = inputAddress.nextElementSibling;
-      // Message erreur ou ok
-      if (testAddress) {
-        validMessageAddress.innerHTML = "Adresse valide";
-        validMessageAddress.classList.remove("text-danger");
-        validMessageAddress.classList.add("text-success");
+    }
+    // Controle de l'adresse
+    function validAddress() {
+      const controlAddress = contact.address;
+      if (
+        /^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+/.test(controlAddress)) {
         return true;
       } else {
-        validMessageAddress.innerHTML = "Adresse invalide";
-        validMessageAddress.classList.remove("text-success");
-        validMessageAddress.classList.add("text-danger");
-        return false;
+        let addressErrorMsg = document.getElementById("addressErrorMsg");
+        addressErrorMsg.innerText =
+          "L'adresse indiquée ne correspond pas au format français";
       }
-    };
-    // Contrôle validité de la ville //
-    const validCity = function (inputCity) {
-      // Creation regexp pour la validation du nom
-      let cityRegexp = new RegExp("^[a-zA-Z-']{2,20}$", "g");
-      // Test de l'expression régulière
-      let testCity = cityRegexp.test(inputCity.value);
-      // Recuperation de la balise <p>
-      let validMessageCity = inputCity.nextElementSibling;
-      // Message erreur ou ok
-      if (testCity) {
-        validMessageCity.innerHTML = "ville valide";
-        validMessageCity.classList.remove("text-danger");
-        validMessageCity.classList.add("text-success");
+    }
+    // Controle de la ville
+    function validCity() {
+      const controlCity = contact.city;
+      if (/^[a-zA-Z-']{2,20}$/.test(controlCity)) {
         return true;
       } else {
-        validMessageCity.innerHTML = "ville non valide";
-        validMessageCity.classList.remove("text-success");
-        validMessageCity.classList.add("text-danger");
-        return false;
+        let cityErrorMsg = document.getElementById("cityErrorMsg");
+        cityErrorMsg.innerText =
+          "La ville ne doit pas contenir de chiffre ou de caractère spécial";
       }
-    };
-    //Contrôle validité de l'email
-    const validEmail = function (inputEmail) {
-      // Creation regexp pour la validation de l'email
-      let emailRegexp = new RegExp(
-        "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$",
-        "g"
-      );
-      // Test de l'expression régulière
-      let testEmail = emailRegexp.test(inputEmail.value);
-      // Recuperation de la balise <p> du message d'erreur
-      let validMessage = inputEmail.nextElementSibling;
-      // Message erreur ou ok
-      if (testEmail) {
-        validMessage.innerHTML = "Adresse mail valide";
-        validMessage.classList.remove("text-danger");
-        validMessage.classList.add("text-success");
+    }
+    // Controle de l'email
+    function validEmail() {
+      const controlEmail = contact.email;
+      if (/^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$/.test(controlEmail)) {
         return true;
       } else {
-        validMessage.innerHTML = "Adresse mail non valide";
-        validMessage.classList.remove("text-success");
-        validMessage.classList.add("text-danger");
-        return false;
+        let emailErrorMsg = document.getElementById("emailErrorMsg");
+        emailErrorMsg.innerText = "Le format de l'adresse mail est incorrect";
       }
-    };
+    }
 
     //*******************************************Recuperation données formulaire****************************************
     //Construction d'un array depuis le local storage
@@ -237,7 +152,7 @@ const sendForm = function () {
     // Mettre l'objet "contact" dans le LS si les values sont présentes dans les champs
     function validForm() {
       if (
-        validFisrtName(form.firstName) &&
+        validFirstName(form.firstName) &&
         validLastName(form.lastName) &&
         validAddress(form.address) &&
         validCity(form.city) &&
@@ -247,7 +162,7 @@ const sendForm = function () {
         return true;
         //   form.submit();
       } else {
-        alert("Veuillez remplir tous les champs du formulaire");
+        alert("Un ou plusieurs champs du formulaire est mal renseigné");
       }
     }
     validForm();
@@ -281,3 +196,38 @@ const sendForm = function () {
   });
 };
 sendForm();
+
+
+function renderHTML() {
+  let html = "";
+  //Si le panier n'est pas vide, il faut afficher les produits qui sont dans le local storage
+  cart.forEach((product, index) => {
+    html += `     <article class="cart__item" data-id="${product._id}">
+                    <div class="cart__item__img">
+                    <img src="${product.imageUrl}" alt="${product.altTxt}">
+                    </div>
+                    <div class="cart__item__content">
+                    <div class="cart__item__content__titlePrice">
+                        <h2>${product.name}</h2>
+                        <p> Couleur : ${product.color}</p>
+                        <p class:"item_price">Prix : ${
+                          product.price * product.qty
+                        } € </p>
+                    </div>
+                    <div class="cart__item__content__settings">
+                        <div class="cart__item__content__settings__quantity">
+                        <p>Qté : </p>
+                        <input type="number" data-index=${index} class="item__quantity" name="itemQuantity" min="1" max="100" value="${
+      product.qty
+    }">
+                        </div>
+                        <div class="cart__item__content__settings__delete">
+                        <p class="deleteItem" data-index=${index}>Supprimer</p>
+                        </div>
+                    </div>
+                    </div>
+                </article>
+            `;
+  });
+  cartContainer.innerHTML = html;
+}

@@ -4,8 +4,6 @@ const urlWithId = window.location.search;
 const urlSearchparams = new URLSearchParams(urlWithId);
 const id = urlSearchparams.get("id");
 
-
-
 // Ajout de l'article selon un ID
 fetch("http://localhost:3000/api/products/" + id)
   .then(function (res) {
@@ -69,20 +67,25 @@ fetch("http://localhost:3000/api/products/" + id)
       colors.appendChild(colorOption);
     }
 
-    // Ajout dans panier
+    //*************************AJOUT DANS LE PANIER****************
+    // Condition ajout dans panier seulement si on selectionne une couleur
+    // Condition ajout dans le panier si on modifie pas l'input par un negatif ou rien ****VOIR AVEC WY
     const addToCart = document.querySelector("#addToCart");
+    let setQuantity = document.getElementById("quantity");
     addToCart.addEventListener("click", () => {
       let redContour = document.getElementById("colors");
       if (!document.getElementById("colors").value) {
         redContour.classList.add("red_alert");
         return;
+      }else if(setQuantity.value <= 0){
+        setQuantity.classList.add("red_alert");
+        return;
       } else {
         redContour.classList.remove("red_alert");
+        setQuantity.classList.remove("red_alert");
       }
-      value["color"] = document.getElementById("colors").value;
-      value["qty"] = Number(document.getElementById("quantity").value);
-
-      
+      value["color"] = document.getElementById("colors").value; //VOIR AVEC WY
+      value["qty"] = Number(document.getElementById("quantity").value); //VOIR AVEC WY
 
       //********************LOCAL STORAGE************************
       // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
@@ -92,18 +95,17 @@ fetch("http://localhost:3000/api/products/" + id)
       }
       // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
       let found = false;
-      cart.forEach((product,index) => {
+      cart.forEach((product, index) => {
         if (
           cart[index]._id == id &&
           cart[index].color == document.getElementById("colors").value
         ) {
-          cart[index].qty+=Number(value["qty"]);
+          cart[index].qty += Number(value["qty"]);
           found = true;
-        } 
+        }
       });
-
+      // Sinon, on va créer le produit dans le local storage
       if (!found) {
-        // Sinon, on va créer le produit dans le local storage
         cart.push(value);
       }
       localStorage.setItem("cart", JSON.stringify(cart));
