@@ -1,16 +1,20 @@
-// Recuperation de la chaine de requête dans l'URL
+//*****************************AFFICHAGE DE LA PAGE PRODUIT*****************************
+
+// Recuperation de la chaine de reqête dans l'url (? et ce qui se trouve après : l'ID du produit)
 const urlWithId = window.location.search;
-// Extraire l'ID
+// Chercher les paramètres de l'url passée
 const urlSearchparams = new URLSearchParams(urlWithId);
+// Extraire la valeur du paramètre (l'ID de l'article)
 const id = urlSearchparams.get("id");
 
-// Ajout de l'article selon un ID
+// Récuperer les valeurs de l'article selon un ID avec une requête GET qui a en paramètre l'ID du produit
 fetch("http://localhost:3000/api/products/" + id)
   .then(function (res) {
     if (res.ok) {
       return res.json();
     }
   })
+  // Affichage du produit de façon dynamique selon article sélectionné sur la page d'accueil
   .then(function (value) {
     let produit = "";
     produit += `
@@ -58,7 +62,7 @@ fetch("http://localhost:3000/api/products/" + id)
     const pageProduit = document.getElementById("limitedWidthBlock");
     pageProduit.innerHTML = produit;
 
-    // Proposition de couleurs selon l'article
+    // Proposition de toutes les couleurs d'un article
     let colors = document.getElementById("colors");
     for (let i = 0; i < value.colors.length; i += 1) {
       let colorOption = document.createElement("option");
@@ -69,7 +73,7 @@ fetch("http://localhost:3000/api/products/" + id)
 
     //*************************AJOUT DANS LE PANIER****************
     // Condition ajout dans panier seulement si on selectionne une couleur
-    // Condition ajout dans le panier si on modifie pas l'input par un negatif ou rien ****VOIR AVEC WY
+    // Condition ajout dans le panier si on modifie pas l'input par un negatif ou rien
     const addToCart = document.querySelector("#addToCart");
     let setQuantity = document.getElementById("quantity");
     addToCart.addEventListener("click", () => {
@@ -77,15 +81,15 @@ fetch("http://localhost:3000/api/products/" + id)
       if (!document.getElementById("colors").value) {
         redContour.classList.add("red_alert");
         return;
-      }else if(setQuantity.value <= 0){
+      } else if (setQuantity.value <= 0) {
         setQuantity.classList.add("red_alert");
         return;
       } else {
         redContour.classList.remove("red_alert");
         setQuantity.classList.remove("red_alert");
       }
-      value["color"] = document.getElementById("colors").value; //VOIR AVEC WY
-      value["qty"] = Number(document.getElementById("quantity").value); //VOIR AVEC WY
+      value["color"] = document.getElementById("colors").value;
+      value["qty"] = Number(document.getElementById("quantity").value);
 
       //********************LOCAL STORAGE************************
       // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
@@ -96,10 +100,7 @@ fetch("http://localhost:3000/api/products/" + id)
       // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
       let found = false;
       cart.forEach((product, index) => {
-        if (
-          cart[index]._id == id &&
-          cart[index].color == document.getElementById("colors").value
-        ) {
+        if (cart[index]._id == id && cart[index].color == value["color"]) {
           cart[index].qty += Number(value["qty"]);
           found = true;
         }
