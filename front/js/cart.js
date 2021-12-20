@@ -89,7 +89,7 @@ const sendForm = function () {
         city: document.querySelector("#city").value,
         email: document.querySelector("#email").value,
       };
-      //... on construction d'un tableau depuis le local storage et y ajouter les ID (requested by controllers)
+      //... construction d'un tableau depuis le local storage et y ajouter les ID (requested by controllers)
       let idProducts = [];
       for (let i = 0; i < cart.length; i++) {
         idProducts.push(cart[i]._id);
