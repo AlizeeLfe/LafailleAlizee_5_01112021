@@ -75,17 +75,17 @@ fetch("http://localhost:3000/api/products/" + id)
     // Condition ajout dans panier seulement si on selectionne une couleur
     // Condition ajout dans le panier si on modifie pas l'input par un negatif ou rien
     const addToCart = document.querySelector("#addToCart");
-    let setQuantity = document.getElementById("quantity");
     addToCart.addEventListener("click", () => {
-      let redContour = document.getElementById("colors");
+      let setColor = document.getElementById("colors");
+      let setQuantity = document.getElementById("quantity");
       if (!document.getElementById("colors").value) {
-        redContour.classList.add("red_alert");
+        setColor.classList.add("red_alert");
         return;
       } else if (setQuantity.value <= 0) {
         setQuantity.classList.add("red_alert");
         return;
       } else {
-        redContour.classList.remove("red_alert");
+        setColor.classList.remove("red_alert");
         setQuantity.classList.remove("red_alert");
       }
       value["color"] = document.getElementById("colors").value;
