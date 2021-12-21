@@ -62,7 +62,7 @@ fetch("http://localhost:3000/api/products/" + id)
     const pageProduit = document.getElementById("limitedWidthBlock");
     pageProduit.innerHTML = produit;
 
-    // Proposition de toutes les couleurs d'un article
+    // Affichage de toutes les proposition de toutes les couleurs d'un article
     let colors = document.getElementById("colors");
     for (let i = 0; i < value.colors.length; i += 1) {
       let colorOption = document.createElement("option");
