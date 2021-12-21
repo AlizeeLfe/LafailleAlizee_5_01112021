@@ -121,7 +121,7 @@ const sendForm = function () {
           // On va créer un élément dans le LS "orderId" avec comme valeur les données de la commande a id unique
           localStorage.setItem("orderId", data.orderId);
           // On renvoi le client à la page de confirmation
-          document.location.href = "confirmation.html";
+          document.location.href = "confirmation.html?id="+data.orderId;
         })
         .catch((err) => console.log("erreur :" + err));
     }
