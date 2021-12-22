@@ -72,8 +72,7 @@ fetch("http://localhost:3000/api/products/" + id)
     }
 
     //*************************AJOUT DANS LE PANIER****************
-    // Condition ajout dans panier seulement si on selectionne une couleur
-    // Condition ajout dans le panier si on modifie pas l'input par un negatif ou rien
+    // Gestion couleur et quantitée requise pour ajouter au panier
     const addToCart = document.querySelector("#addToCart");
     addToCart.addEventListener("click", () => {
       let setColor = document.getElementById("colors");
@@ -92,7 +91,8 @@ fetch("http://localhost:3000/api/products/" + id)
       value["qty"] = Number(document.getElementById("quantity").value);
 
       //********************LOCAL STORAGE************************
-      // Si il y a quelque chose dans le local storage, alors on ajoute le contenu dans un tableau, et on renvoie l'info dans le LS en format Json
+      // Si il y a quelque chose dans le local storage :
+      // alors on recupère le contenu, on l'ajoute dans un tableau, et on converti en objet JSON
       let cart = [];
       if (localStorage.getItem("cart") !== null) {
         cart = JSON.parse(localStorage.getItem("cart"));
