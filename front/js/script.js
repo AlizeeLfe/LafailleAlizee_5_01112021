@@ -1,15 +1,15 @@
 //*****************************AFFICHAGE DE TOUS LES ARTICLES SUR LA PAGE D'ACCUEIL*****************************
 
-// Récupération des données de L'API avec une requête GET sans paramètre pour récuperer tous les éléments
+// Récupération de tous les articles que contient L'API avec une requête GET
 fetch("http://localhost:3000/api/products")
-// Première promesse qui va nous retourner une réponse (si true) qu'on va convertir en JSON
-// (avantage du JSON = directement lu et transformé en objet JS par le navigateur)
+  // Première promesse qui retourne une réponse qu'on va convertir en JSON
+  // (avantage du JSON = directement lu et transformé en objet JS par le navigateur)
   .then(function (res) {
     if (res.ok) {
       return res.json();
     }
   })
-  // Afficher chaque produit avec ses propres spécificitées grâce à la concatenation Variable/Key
+  // Ensuite : afficher chaque article de façon dynamique, avec leurs valeurs grâce à des variables
   .then(function (value) {
     let html = "";
     value.forEach((element) => {
@@ -25,9 +25,9 @@ fetch("http://localhost:3000/api/products")
     const items = document.getElementById("items");
     items.innerHTML = html;
   })
-  // Non resolution de la promesse (pas d'execution du .then)
-  // Affichage d'un message d'erreur si on obtien pas de reponse de l'API (codes de statut 400 à 500+)
+  // Si la promesse n'a pas été résolue, elle ne sera pas exécutée, alors on récupère l'erreur.
   .catch(function (err) {
     const items = document.getElementById("items");
+    // Affichage d'un message d'erreur
     items.innerHTML = `Une erreur est survenue (${err})`;
   });

@@ -1,20 +1,19 @@
 //*****************************AFFICHAGE DE LA PAGE PRODUIT*****************************
-
-// Recuperation de la chaine de reqête dans l'url (? et ce qui se trouve après : l'ID du produit)
+// Recuperation de la l'URL actuelle de la fenêtre à partir du paramètre (point d'interrogation)
 const urlWithId = window.location.search;
-// Chercher les paramètres de l'url passée
+// On passe l'URL par le constructeur URLSP pour obtenir une nouvelle instance que l'on pourra facilement manipuler
 const urlSearchparams = new URLSearchParams(urlWithId);
-// Extraire la valeur du paramètre (l'ID de l'article)
+// Extraire l'id
 const id = urlSearchparams.get("id");
 
-// Récuperer les valeurs de l'article selon un ID avec une requête GET qui a en paramètre l'ID du produit
+// Récuperer les caractéristiques d'un article selon son ID avec une requête GET qui a en paramètre l'ID du produit
 fetch("http://localhost:3000/api/products/" + id)
   .then(function (res) {
     if (res.ok) {
       return res.json();
     }
   })
-  // Affichage du produit de façon dynamique selon article sélectionné sur la page d'accueil
+  // Affichage du produit de façon dynamique
   .then(function (value) {
     let produit = "";
     produit += `
@@ -62,8 +61,10 @@ fetch("http://localhost:3000/api/products/" + id)
     const pageProduit = document.getElementById("limitedWidthBlock");
     pageProduit.innerHTML = produit;
 
-    // Affichage de toutes les proposition de toutes les couleurs d'un article
+    // AFFICHER TOUTES LES COULEURS DISPONIBLES POUR UN ARTICLE
     let colors = document.getElementById("colors");
+    // On boucle sur toutes les couleurs disponibles ...
+    // ... et on va créer un nouvel element "option" qui se rajoute à la suite des autres
     for (let i = 0; i < value.colors.length; i += 1) {
       let colorOption = document.createElement("option");
       colorOption.innerText = value.colors[i];
@@ -72,7 +73,8 @@ fetch("http://localhost:3000/api/products/" + id)
     }
 
     //*************************AJOUT DANS LE PANIER****************
-    // Gestion couleur et quantitée requise pour ajouter au panier
+    // Gestion "couleur" et "quantitée" requise pour ajouter au panier
+    // Sinon, on affiche un message d'erreur et on met fin à l'exécution de la fonction
     const addToCart = document.querySelector("#addToCart");
     addToCart.addEventListener("click", () => {
       let setColor = document.getElementById("colors");
@@ -87,32 +89,40 @@ fetch("http://localhost:3000/api/products/" + id)
         setColor.classList.remove("red_alert");
         setQuantity.classList.remove("red_alert");
       }
+
+      //Ajout de paire clé/valeur dans le Local Storage
       value["color"] = document.getElementById("colors").value;
       value["qty"] = Number(document.getElementById("quantity").value);
 
       //********************LOCAL STORAGE************************
       // Si il y a quelque chose dans le local storage :
-      // alors on recupère le contenu, on l'ajoute dans un tableau, et on converti en objet JSON
+      // alors on recupère le contenu, on le converti en objet JS et l'ajoute dans "cart" du LS
       let cart = [];
       if (localStorage.getItem("cart") !== null) {
         cart = JSON.parse(localStorage.getItem("cart"));
       }
-      // Si l'article ajouté à le même id et la même couleur, alors on incremente la quantitée
+      // Si l'article ajouté à le même id et la même couleur qu'un article du Local Storage....
+      // ....alors on incremente la quantité
       let found = false;
       cart.forEach((product, index) => {
         if (cart[index]._id == id && cart[index].color == value["color"]) {
           cart[index].qty += Number(value["qty"]);
           found = true;
+          alert(
+            "Vous avez augmenté la quantitée de votre article dans le panier"
+          );
         }
       });
-      // Sinon, on va créer le produit dans le local storage
+      // Si il n'y a rien dans le LS, alors on va créer le produit dans le local storage
       if (!found) {
         cart.push(value);
+        alert("Votre article a bien été ajouté au panier");
       }
+      // On met à jour "cart" dans le LS et on converti le contenu en format JSON
       localStorage.setItem("cart", JSON.stringify(cart));
     });
   })
-
+  // Si la promesse n'a pas été résolue, elle ne sera pas exécutée, alors on récupère l'erreur et on affiche le message
   .catch(function (err) {
     const pageProduit = document.getElementsByClassName("limitedWidthBlock");
     pageProduit.innerHTML = `Une erreur est survenue (${err})`;

@@ -1,10 +1,12 @@
 //**********************************AFFICHAGE DES PROUITS DANS LE PANIER**********************************
+
+// Recuperation des emplacements de texte à afficher
 const cartContainer = document.querySelector(".cart-all-items");
 const cartPrice = document.querySelector(".cart__price");
 const cartOrder = document.querySelector(".cart__order");
 const errorMsg = document.querySelector("#cart__items");
 
-// Recuperation des données du LS avec méthode "getItem", et conversion en format JSON
+// Recuperation des données du LS, et conversion en format JSON
 let cart = JSON.parse(localStorage.getItem("cart"));
 // Si le panier est vide : afficher un message, et cacher le reste de la page
 if (cart === null) {
@@ -15,11 +17,12 @@ if (cart === null) {
   errorMsg.style.textAlign = "center";
   cartPrice.style.display = "none";
   cartOrder.style.display = "none";
+  //Si le panier n'est pas vide : Afficher les articles qui sont dans le LS...
 } else {
-  //Si le panier n'est pas vide : Afficher les produits qui sont dans le local storage
+  //...en faisant appel à la fonction qui permet d'afficher chaque article de façon dynamique
   renderHTML();
-  // GESTION DE LA MODIFICATION DU CONTENU DU PANIER ET DU LS SIMULATANEMENT
-  // Supprimer un article
+
+  // SUPPRIMER UN ARTICLE
   let deleteBtn = document.querySelectorAll(".deleteItem");
   deleteBtn.forEach((btn) => {
     btn.addEventListener("click", function (e) {
@@ -35,7 +38,7 @@ if (cart === null) {
     }
     window.location.reload();
   }
-  // Changer la quantité depuis le panier
+  // CHANGER LA QUANTITÉ D'UN ARTICLE
   let updateQuantityInput = document.querySelectorAll(".item__quantity");
   updateQuantityInput.forEach((input) => {
     input.addEventListener("change", function (e) {
@@ -47,11 +50,13 @@ if (cart === null) {
       cart[index].qty = Number(value);
       localStorage.setItem("cart", JSON.stringify(cart));
       updateTotal();
+      window.location.reload();
     }
   }
-  // AFFICHER LA "QUANTITÉE TOTALE" ET "PRIX TOTAL" À JOUR
+
+  // AFFICHER LA "QUANTITÉ TOTALE" ET "PRIX TOTAL" À JOUR
   function updateTotal() {
-    // Récupération de la quantitée totale
+    // Récupération et affichage de la quantité totale
     let totalItemQty = 0;
     cart.forEach((e) => {
       totalItemQty += e.qty;
@@ -59,7 +64,7 @@ if (cart === null) {
     let totalQty = document.getElementById("totalQuantity");
     totalQty.innerHTML = totalItemQty;
 
-    // Récupération du prix total
+    // Récupération et affichage du prix total
     let totalItemPrice = 0;
     cart.forEach((e) => {
       totalItemPrice += e.qty * e.price;
@@ -71,7 +76,7 @@ if (cart === null) {
 }
 
 //**********************************FORMULAIRE**********************************
-// ENVOI DES DONNÉES "CONTACT" ET "PRODUCTS" (du LS) AU SERVEUR SI LES DONNÉES SONT OK
+// (on envoie "contact" et "products" (du LS) au serveur si les données sont ok)
 
 // SOUMETTRE LE FORMULAIRE (lorsqu'on clique sur le bouton "commander")
 const sendForm = function () {
@@ -79,7 +84,7 @@ const sendForm = function () {
   form.addEventListener("submit", (e) => {
     // Stopper le comportement par défaut du bouton pour eviter le rechargement de la page (et perdre les infos)
     e.preventDefault();
-    // SI LES INFORMATIONS DU FORMULAIRE SONT CONFORMES AUX REGEX ...
+    // SI LES INFORMATIONS DU FORMULAIRE SONT CONFORMES ...
     if (validForm()) {
       //... alors on récupère ces informations dans un objet "contact" (requested by controllers)
       const contact = {
@@ -89,12 +94,12 @@ const sendForm = function () {
         city: document.querySelector("#city").value,
         email: document.querySelector("#email").value,
       };
-      //... construction d'un tableau depuis le local storage et y ajouter les ID (requested by controllers)
+      //... construction d'un tableau depuis le local storage et y ajouter les ID des articles (requested by controllers)
       let idProducts = [];
       for (let i = 0; i < cart.length; i++) {
         idProducts.push(cart[i]._id);
       }
-      //... on met les valeurs du formulaire et les produits sélectionnés dans un objet à envoyer vers le serveur
+      //... on met les valeurs du formulaire et les articles sélectionnés dans un objet à envoyer vers le serveur
       const toSend = {
         products: idProducts,
         contact,
@@ -118,10 +123,10 @@ const sendForm = function () {
         .then((data) => {
           // On vide le LS pour pas que les articles s'affichent encore dans le panier après avoir passer commande
           localStorage.clear();
-          // On va créer un élément dans le LS "orderId" avec comme valeur les données de la commande a id unique
+          // On va créer un élément dans le LS avec comme valeur le numéro de commande retourné par l'API
           localStorage.setItem("orderId", data.orderId);
           // On renvoi le client à la page de confirmation
-          document.location.href = "confirmation.html?id="+data.orderId;
+          document.location.href = "confirmation.html?id=" + data.orderId;
         })
         .catch((err) => console.log("erreur :" + err));
     }
@@ -129,7 +134,7 @@ const sendForm = function () {
 };
 sendForm();
 
-// FONCTION POUR VÉRIFIER LA CONFORMITÉ DE L'ENSEMBLE DES VALEURS ENTRÉES DANS LE FORMULAIRE
+// VÉRIFIER LA CONFORMITÉ DE LA TOTALITÉE DES VALEURS ENTRÉES DANS LE FORMULAIRE
 function validForm() {
   const input = {
     firstName: document.querySelector("#firstName"),
@@ -170,19 +175,20 @@ function validForm() {
     return false;
   }
 }
-// FONCTION POUR VÉRIFIER QUE LA VALEUR DE L'INPUT EST CONFORME A CE QUI EST DEMANDÉ GRACE AUX TEST REGEX
+// FONCTION POUR VÉRIFIER QUE LA VALEUR D'UN INPUT EST CONFORME A CE QUI EST DEMANDÉ GRACE AUX TEST REGEX
 function checkRegex(element, regex, message) {
   // Opérateur "new" pour créer un nouvel objet qui teste la valeur de l'input avec la méthode "RegExp.test()"
+  // Si ok elle retourne true
   if (new RegExp(regex).test(element.value)) {
     return true;
   } else {
-    // Si valeur de l'input non conforme : on affiche le message d'erreur
+    // Si valeur de l'input non conforme : on affiche le message d'erreur, on retoune false
     element.nextElementSibling.innerText = message;
     return false;
   }
 }
 
-// FONCTION QUI PERMET D'AFFICHER CHAQUE PRODUIT DANS LE PANIER
+// FONCTION QUI PERMET D'AFFICHER CHAQUE ARTICLE DANS LE PANIER
 function renderHTML() {
   let html = "";
   cart.forEach((product, index) => {
