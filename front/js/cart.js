@@ -51,28 +51,29 @@ if (cart === null) {
   }
 
   // CHANGER LA QUANTITÉ D'UN PRODUIT
-  // Recuperation de tous les éléments HTML de la même classe
+  // Récuperation de tous les éléments HTML de la même classe
   let updateQuantityInput = document.querySelectorAll(".item__quantity");
   // Pour chaque input, on écoute le changement de valeur...
   updateQuantityInput.forEach((input) => {
     input.addEventListener("change", function (e) {
-      //...et on change la quantité du produit (lié à l'input modifié) dans le LS
-      // grace à l'appel de la fonction permettant de "changer la quantité d'un produit"
+      //...et on appelle la fonction permettant de "changer la quantité d'un produit" au niveau de l'input ciblé 
       updateQuantityOnCart(e.target.dataset.index, e.target.value);
     });
   });
+
+
   // FONCTION "changer la quantité d'un produit"
-  function updateQuantityOnCart(index, value) {
-    // Si la quantité renseignée dans l'input est supérieure à 0...
-    if (value > 0) {
-      //...alors on attribue une nouvelle valeur à la quantité initiale du tableau
-      cart[index].qty = Number(value);
-      //...on met à jour le LS
-      localStorage.setItem("cart", JSON.stringify(cart));
-      //...on appelle la fonction permettant de mettre à jour les totaux
-      updateTotal();
-    }
+function updateQuantityOnCart(index, value) {
+  // Si la quantité renseignée dans l'input est supérieure à 0...
+  if (value > 0) {
+    //...alors on attribue une nouvelle valeur à la quantité initiale du tableau
+    cart[index].qty = Number(value);
+    //...on met à jour le LS
+    localStorage.setItem("cart", JSON.stringify(cart));
+    //...on appelle la fonction permettant de mettre à jour les totaux
+    updateTotal();
   }
+}
 
   // FONCTION POUR AFFICHER LA "QUANTITÉ TOTALE" ET "PRIX TOTAL"
   function updateTotal() {
@@ -193,7 +194,7 @@ function validForm() {
     checkRegex(
       input.address,
       "^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+",
-      "L'adresse comporte un caractère non autorisé"
+      "Le format de l'adresse est incorrect"
     ) &&
     checkRegex(
       input.city,
