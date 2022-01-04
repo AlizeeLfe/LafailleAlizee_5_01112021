@@ -151,7 +151,7 @@ const sendForm = function () {
       //... on récupère les données de L'API avec en paramètre de requête : un objet init
       fetch("http://localhost:3000/api/products/order", promiseCart)
         .then((response) => response.json())
-        // on renvoi les données traitées par JSON
+        // on renvoi les données traitées en JSON
         .then((data) => {
           // On vide le LS pour pas que les produits s'affichent encore dans le panier après avoir passer commande
           localStorage.clear();
@@ -223,7 +223,8 @@ function checkRegex(element, regex, message) {
   if (new RegExp(regex).test(element.value)) {
     return true;
   } else {
-    // Si valeur de l'input est non conforme à la RegExp : on affiche le message d'erreur, elle retoune false
+    // Si valeur de l'input est non conforme à la RegExp : 
+    // on récupère l'input suivant, et on affiche le message d'erreur. On retoune false
     element.nextElementSibling.innerText = message;
     return false;
   }

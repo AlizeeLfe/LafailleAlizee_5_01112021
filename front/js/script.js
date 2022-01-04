@@ -1,14 +1,13 @@
 //*****************************AFFICHAGE DE TOUS LES PRODUITS SUR LA PAGE D'ACCUEIL*****************************
 
+// "Récupérer la ressource située à l'adresse URL()"
 // Récupération de tous les produits que contient L'API avec une requête de type "GET"
-// Utilisation de l'API FETCH (+souple, +puissante que "XMLHttpRequest": ancienne version)
-// On évite le "Callbackhell" en utilisant des promesses asynchrones
 fetch("http://localhost:3000/api/products")
   // Première promesse :
   .then(function (res) {
+    // Si le statut de la réponse est OK (statut HTTP 200, "OK")
     if (res.ok) {
-      // Elle retourne une réponse qu'on va convertir en JSON
-      // (avantage du JSON = directement lu et transformé en objet JS par le navigateur)
+      // Alors elle vaut "true", on converti la réponse retournée en JSON
       return res.json();
     }
   })
