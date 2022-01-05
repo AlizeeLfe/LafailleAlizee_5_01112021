@@ -155,10 +155,8 @@ const sendForm = function () {
         .then((data) => {
           // On vide le LS pour pas que les produits s'affichent encore dans le panier après avoir passer commande
           localStorage.clear();
-          // On va créer un élément dans le LS avec comme valeur le numéro de commande retourné par l'API
-          localStorage.setItem("orderId", data.orderId);
           // On renvoi le client à la page de confirmation
-          document.location.href = "confirmation.html?id=" + data.orderId;
+          document.location.href = "confirmation.html?orderId=" + data.orderId;
         })
         // Si la promesse n'a pas été résolue, elle ne sera pas exécutée
         // On affiche l'erreur dans la console
